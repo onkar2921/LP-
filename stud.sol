@@ -1,38 +1,47 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.0;
 
-contract studentData{
-    struct Student{
+contract StudentDatabase {
+    
+    // Structure to store student data
+    struct Student {
+        uint256 id;
         string name;
-        uint256 age;
-        uint256 roll;
+        uint8 age;
     }
 
+    // Array to store the list of students
+    Student[] public students;
+    
+    // Mapping to check if a student ID is already used
+    mapping(uint256 => bool) private studentExists;
 
+    // Event to emit when a new student is added
+    event StudentAdded(uint256 id, string name, uint8 age);
 
-    Student[] public  students;
+    // Function to add a new student
+    function addStudent(uint256 _id, string memory _name, uint8 _age) public {
+        require(!studentExists[_id], "Student ID already exists");
+        require(_age > 0, "Age must be greater than zero");
 
+        students.push(Student(_id, _name, _age));
+        studentExists[_id] = true;
 
-    event studentAdded(string message);
-
-
-    function addStudent(string memory _name,uint256 _age,uint256 _roll) public {
-        students.push(Student(_name,_age,_roll));
-        emit studentAdded("new student added");
+        emit StudentAdded(_id, _name, _age);
     }
 
-
-    function getStudentDataByIndex(uint256 index) public  view returns(string memory,uint256,uint256){
-        require(index<students.length ," index not exists");
-        Student memory student=students[index];
-
-        return (student.name,student.age,student.roll);
+    // Function to get the list of all students
+    function getStudents() public view returns (Student[] memory) {
+        return students;
     }
 
-
-    function getNumberOfStudents()public  view returns (uint){
-        return students.length;
+    receive() external payable {
     }
 
+    fallback() external payable {
+    }
 
+    function getContractBalance() public view returns (uint256) {
+        return address(this).balance;
+    }
 }
